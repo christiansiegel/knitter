@@ -8,7 +8,7 @@ The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrelli
 
 # How to use it
 
-1. Clone the repository.
+1. Clone the repository (or just download [knitter.pde](https://raw.githubusercontent.com/christiansiegel/knitter/master/knitter.pde))
 2. Open with [Processing](https://processing.org/).
 3. Modify the configuration parameters at the top of the file.
 4. Run Sketch.
