@@ -70,6 +70,12 @@ class Slider {
     this.value = value;
     this.text = text;
   }
+  
+  // Set slider value and redraw.
+  void setValue(int value) {
+    this.value = value;
+    drawSelf();
+  }
 
   // Draw slider 
   void drawSelf() {
@@ -203,11 +209,12 @@ Boolean contains(StringList list, String element) {
 // Returns the next pin, so that the string from the current pin achieves the
 // maximum score. To prevent a string path from beeing used twice, a list of 
 // already used pin pairs can be given. The minimum distance between to 
-// consecutive pins is specified by minDistance.
+// consecutive pins is specified by minDistance. If no valid next pin can be 
+// found -1 is returned.
 int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
             StringList used, PImage image, int minDistance) {
   double maxScore = 0;
-  int next = 0;
+  int next = -1;
   for (int i = 0; i < NR_PINS; ++i) {
     String pair = pinPair(current, i);
     
@@ -324,6 +331,10 @@ void generatePattern() {
   for (int i = 0; i < stringSlider.value; ++i) {
     // Get next pin
     int next = nextPin(current, lines, used, imgCopy, minDistanceSlider.value);
+    if(next < 0) {
+      stringSlider.setValue(used.size());
+      break;
+    }
     
     // Reduce darkness in image
     String pair = pinPair(current, next);
