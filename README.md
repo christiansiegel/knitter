@@ -4,7 +4,9 @@ knitter is an open software to generate a circular knitting pattern from a pictu
  
 The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrellis/works/knit.html).
 
-*!! Under development !!*
+## Showcase
+
+* http://imgur.com/gallery/pN5T9
 
 # How to use it
 
