@@ -8,6 +8,9 @@ final String FILENAME = "image.jpg";
 // Number of pins
 final int NR_PINS = 200;
 
+// Physical diameter (to calculate total string length)
+final float DIAMETER = 0.8; // [m]
+
 // Default number of strings used
 final int DEFAULT_STRINGS = 3000;
 
@@ -236,6 +239,22 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
   return next;
 }
 
+// Calculates total string length based on steps and circle diameter
+int totalStringLength(IntList steps, float diameter) {
+  ArrayList<Point> p = calcCirclePins(NR_PINS, new Point(0,0) , int(diameter * 1000));
+  float len = 0;
+   for (int i = 0; i < steps.size() - 1; i++) {
+      // Get pin pair
+      Point a = p.get(steps.get(i));
+      Point b = p.get(steps.get(i + 1));
+      // Calculate distance and add to total length
+      int x = a.x - b.x;
+      int y = a.y - b.y;
+      len += sqrt(x*x + y*y);
+   }
+   return int(len/1000);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
@@ -347,6 +366,9 @@ void generatePattern() {
     steps.push(next);
     current = next;
   }
+  
+  println("Total string length: " + totalStringLength(steps, DIAMETER) + " m");
+  
   redraw = true;
   redraw();
 }
