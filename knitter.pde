@@ -255,14 +255,47 @@ int totalStringLength(IntList steps, float diameter) {
    return int(len/1000);
 }
 
-void saveStepsAsJson(String filename, IntList steps) {
-  String json = "[";
+void saveInstructions(String filename, IntList steps) {
+  String html = "<!DOCTYPE html><html> <head> <meta content=\"text/html;chars" + 
+                "et=utf-8\" http-equiv=\"Content-Type\"/> <style>*{box-sizing" + 
+                ": border-box;}body{-webkit-touch-callout: none; -webkit-user" + 
+                "-select: none; -khtml-user-select: none; -moz-user-select: n" + 
+                "one; -ms-user-select: none; user-select: none;}div{text-alig" + 
+                "n: center; font-family: sans-serif; line-height: 150%; text-" + 
+                "shadow: 0 2px 2px #b6701e; height: 100%; color: #fff;}p{font" + 
+                "-size: 4vw;}input{width: 100%; text-align: center;}.pin{posi" + 
+                "tion: absolute; top: 50%; left: 50%; transform: translate(-5" + 
+                "0%, -50%); width: 100%; padding: 20px; font-size: 16vw;}.con" + 
+                "tainer{display: table; width: 100%;}.left-half{background-co" + 
+                "lor: #0071DC; position: absolute; left: 0px; width: 50%;}.ri" + 
+                "ght-half{background-color: #002B5B; position: absolute; righ" + 
+                "t: 0px; width: 50%;}#step-input{font-size: 3vw;}</style> <sc" + 
+                "ript src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.1." + 
+                "1/jquery.min.js\"> </script> <script src='https://code.respo" + 
+                "nsivevoice.org/responsivevoice.js'></script> <script type=\"" + 
+                "text/javascript\">var stepList=[\"start\",0,\"end\"]; var cu" + 
+                "rrent=0; function previous(){if (current > 0){current--; sho" + 
+                "wStep();}}function next(){if (current < stepList.length - 2)" + 
+                "{current++; showStep();}}function showStep(){$(\"#from-pin\"" + 
+                ").text(stepList[current]); $(\"#to-pin\").text(stepList[curr" + 
+                "ent + 1]); $(\"#step-input\").val(current); responsiveVoice." + 
+                "speak((stepList[current + 1]).toString());}function jumpToSt" + 
+                "ep(){current=parseInt($(\"#step-input\").val()); if (current" + 
+                " < 0) current=0; else if (current > stepList.length - 2) cur" + 
+                "rent=stepList.length - 2; showStep();}</script> <title>knitt" + 
+                "er</title> </head> <body onload=\"showStep()\"> <section cla" + 
+                "ss=\"container\"> <input id=\"step-input\" onchange=\"jumpTo" + 
+                "Step()\" type=\"tel\"> <div class=\"left-half\" onclick=\"pr" + 
+                "evious()\"> <p>from</p><span class=\"pin\" id=\"from-pin\">?" + 
+                "??</span> </div><div class=\"right-half\" onclick=\"next()\"" + 
+                "> <p>to</p><span class=\"pin\" id=\"to-pin\">???</span> </di" + 
+                "v></section> </body></html>";
+  String list = ",";
   for (int i = 0; i < steps.size(); i++) {
-    if(i % 10 == 0) json += "\n ";
-    json += String.format("%1$3s, ",  steps.get(i));
+    list += steps.get(i) + ",";
   }
-  json = json.substring(0, json.length() - 2) + "\n]";
-  saveBytes(filename, json.getBytes());
+  html = html.replace(",0,", list);
+  saveBytes(filename, html.getBytes());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,7 +411,7 @@ void generatePattern() {
   }
   
   println("Total string length: " + totalStringLength(steps, DIAMETER) + " m");
-  saveStepsAsJson("steps.json", steps);
+  saveInstructions("instruction.html", steps);
   
   redraw = true;
   redraw();
