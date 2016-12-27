@@ -220,7 +220,8 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
     
     // Prevent two consecutive pins with less than minimal distance
     int diff = abs(current - i);
-    if (diff < minDistance || diff > NR_PINS - minDistance) continue;
+    float dist = random(minDistance * 2/3, minDistance * 4/3);
+    if (diff < dist || diff > NR_PINS - dist) continue;
   
     // Prevent usage of already used pin pair
     if (contains(used, pair)) continue;
@@ -352,6 +353,7 @@ void generatePattern() {
 
 void setup() {
   size(1410, 835);
+  randomSeed(0);
 
   // Load image from file.
   img = loadImage(FILENAME);
@@ -376,7 +378,7 @@ void setup() {
   // Init sliders
   stringSlider = new Slider(5, SIZE + 10, width - 10, 20, DEFAULT_STRINGS, 0, 10000, "strings");
   fadeSlider = new Slider(5, SIZE + 35, width - 10, 20, DEFAULT_FADE, 0, 255, "fade");
-  minDistanceSlider = new Slider(5, SIZE + 60, width - 10, 20, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "minimal distance");
+  minDistanceSlider = new Slider(5, SIZE + 60, width - 10, 20, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "average minimal distance");
   lineVariationSlider = new Slider(5, SIZE + 85, width - 10, 20, DEFAULT_LINE_VARATION, 0, 20, "line variation");
   opacitySlider = new Slider(5, SIZE + 110, width - 10, 20, DEFAULT_OPACITY, 0, 100, "opacity");
 
