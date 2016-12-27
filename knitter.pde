@@ -255,6 +255,16 @@ int totalStringLength(IntList steps, float diameter) {
    return int(len/1000);
 }
 
+void saveStepsAsJson(String filename, IntList steps) {
+  String json = "[";
+  for (int i = 0; i < steps.size(); i++) {
+    if(i % 10 == 0) json += "\n ";
+    json += String.format("%1$3s, ",  steps.get(i));
+  }
+  json = json.substring(0, json.length() - 2) + "\n]";
+  saveBytes(filename, json.getBytes());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,6 +378,7 @@ void generatePattern() {
   }
   
   println("Total string length: " + totalStringLength(steps, DIAMETER) + " m");
+  saveStepsAsJson("steps.json", steps);
   
   redraw = true;
   redraw();
