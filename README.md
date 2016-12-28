@@ -41,10 +41,10 @@ The pins are numbered counter-clockwise starting from 0:
 
 ![Numbering](doc/numbering.png "Numbering")
 
-To have an estimate how much string is needed, the total length is printed in the end.
+To have an estimate how much thread is needed, the total length is printed in the end.
 
 ```
-Total string length: 1543 m
+Total thread length: 1543 m
 ```
 
 ## HTML

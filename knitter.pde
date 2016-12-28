@@ -8,7 +8,7 @@ final String FILENAME = "image.jpg";
 // Number of pins
 final int NR_PINS = 200;
 
-// Physical diameter (to calculate total string length)
+// Physical diameter (to calculate total thread length)
 final float DIAMETER = 0.8; // [m]
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -243,8 +243,8 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
   return next;
 }
 
-// Calculates total string length based on steps and circle diameter
-int totalStringLength(IntList steps, float diameter) {
+// Calculates total thread length based on steps and circle diameter
+int totalThreadLength(IntList steps, float diameter) {
   ArrayList<Point> p = calcCirclePins(NR_PINS, new Point(0,0) , int(diameter * 1000));
   float len = 0;
    for (int i = 0; i < steps.size() - 1; i++) {
@@ -414,7 +414,7 @@ void generatePattern() {
     current = next;
   }
   
-  println("Total string length: " + totalStringLength(steps, DIAMETER) + " m");
+  println("Total thread length: " + totalThreadLength(steps, DIAMETER) + " m");
   saveInstructions("instruction.html", steps);
   
   redraw = true;
