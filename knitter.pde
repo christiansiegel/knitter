@@ -407,7 +407,7 @@ void generatePattern() {
     String pair = pinPair(current, next);
     reduceLine(imgCopy, lines.get(pair), fadeSlider.value);
 
-    print("String #" + (i + 1) + " -> next pin: " + next + "\n");
+    print("String #" + i + " -> next pin: " + next + "\n");
 
     used.push(pair);
     steps.push(next);

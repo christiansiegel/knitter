@@ -25,7 +25,7 @@ While running the Sketch, a simulated result is shown in the window.
 
 ## Console
 
-The knitting order is printed to the console like
+The knitting order is printed to the console. 
 
 ```
 String #1454 -> next pin: 84
@@ -36,6 +36,10 @@ String #1458 -> next pin: 80
 String #1459 -> next pin: 14
 String #1460 -> next pin: 83
 ```
+
+The pins are numbered counter-clockwise starting from 0:
+
+![Numbering](doc/numbering.png "Numbering")
 
 To have an estimate how much string is needed, the total length is printed in the end.
 
