@@ -408,7 +408,7 @@ void generatePattern() {
     String pair = pinPair(current, next);
     reduceLine(imgCopy, lines.get(pair), fadeSlider.value);
 
-    String instruction = "String #" + i + " -> next pin: " + next + "\n";
+    String instruction = "String #" + i + " -> next pin: " + next + "\r\n";
     print(instruction);
     stepsInstructions += instruction;
   
