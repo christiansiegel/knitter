@@ -23,9 +23,9 @@ The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrelli
 
 While running the Sketch, a simulated result is shown in the window.
 
-## Console
+## Instructions
 
-The knitting order is printed to the console. 
+The knitting order is printed to the console and saved to `instruction.txt`. 
 
 ```
 String #1454 -> next pin: 84
@@ -37,19 +37,19 @@ String #1459 -> next pin: 14
 String #1460 -> next pin: 83
 ```
 
+Furthermore, an interactive HTML page displaying and reading the single steps is generated and saved to `instruction.html`.
+
 The pins are numbered counter-clockwise starting from 0:
 
 ![Numbering](doc/numbering.png "Numbering")
 
-To have an estimate how much thread is needed, the total length is printed in the end.
+## Thread Length
+
+To have an estimate how much thread is needed, the total length is printed to the console in the end.
 
 ```
 Total thread length: 1543 m
 ```
-
-## HTML
-
-An interactive HTML page displaying and reading the single steps is generated and saved to `instruction.html`.
 
 # Screenshot
 
