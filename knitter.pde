@@ -393,7 +393,7 @@ void generatePattern() {
   
   // Always start from pin 0
   int current = 0;  
-  steps.push(current);
+  steps.append(current);
   
   StringList used = new StringList();
   for (int i = 0; i < stringSlider.value; ++i) {
@@ -412,8 +412,8 @@ void generatePattern() {
     print(instruction);
     stepsInstructions += instruction;
   
-    used.push(pair);
-    steps.push(next);
+    used.append(pair);
+    steps.append(next);
     current = next;
   }
   
