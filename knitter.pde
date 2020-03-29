@@ -433,6 +433,11 @@ void setup() {
 
   // Load image from file.
   img = loadImage(FILENAME);
+  if (img == null) {
+    println("Couldn't load image file '" + sketchFile(FILENAME) + "'!");
+    exit();
+    return;
+  }
   img.filter(GRAY);
   img.resize(SIZE, SIZE);
   cropImageCircle(img);
