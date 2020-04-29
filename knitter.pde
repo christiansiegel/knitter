@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Image's filename. Should be a square image.
-final String FILENAME = "image.jpg";
+final String FILENAME = "img.jpg";
 
 // Number of pins
 final int NR_PINS = 200;
@@ -178,24 +178,48 @@ ArrayList<Point> linePixels(Point a, Point b) {
 }
 
 // Returns the score of a line from a to b, based on the image's pixels it
-// passes through (linear; black pixel gets maximum score of 255).
-double lineScore(PImage image, ArrayList<Point> points) {
+// passes through (linear; maximum score: 255).
+double lineScore(color colorCMY, PImage image, ArrayList<Point> points) {
   int score = 0;
   for (Point p : points) {
-    color c = image.get(p.y, p.x) & 0xff;
-    score += 0xff - c;
+    int pixel = image.get(p.y, p.x);
+    if (colorCMY == COLOR_C) {
+      int r = (pixel >> 16) & 0xff;
+      score += 0xff - r;
+    }
+    else if (colorCMY == COLOR_M) {
+      int g = (pixel >> 8) & 0xff;
+      score += 0xff - g;
+    }
+    else {
+      int b = pixel & 0xff;
+      score += 0xff - b;
+    }
   }
   return (double)score / points.size();
 }
 
 // Reduce darkness of image's pixels the line from a to b passes through by 
 // a given value (0 - 255);
-void reduceLine(PImage image, ArrayList<Point> points, int value) {
+void reduceLine(color colorCMY, PImage image, ArrayList<Point> points, int value) {
   for (Point p : points) {
-    int c = image.get(p.y, p.x) & 0xff;
-    c += value;
-    if (c > 0xff) c = 0xff;
-    image.set(p.y, p.x, color(c));
+    int pixel = image.get(p.y, p.x);
+    int r = (pixel >> 16) & 0xff;
+    int g = (pixel >> 8) & 0xff;
+    int b = pixel & 0xff;
+    if (colorCMY == COLOR_C) {
+      r += value;
+      if (r > 0xff) r = 0xff;
+    }
+    else if (colorCMY == COLOR_M) {
+      g += value;
+      if (g > 0xff) g = 0xff;
+    }
+    else {
+      b += value;
+      if (b > 0xff) b = 0xff;
+    }
+    image.set(p.y, p.x, color(r, g, b));
   }
 }
 
@@ -218,7 +242,7 @@ Boolean contains(StringList list, String element) {
 // already used pin pairs can be given. The minimum distance between to 
 // consecutive pins is specified by minDistance. If no valid next pin can be 
 // found -1 is returned.
-int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
+int nextPin(color colorCMY, int current, HashMap<String, ArrayList<Point>> lines,
             StringList used, PImage image, int minDistance) {
   double maxScore = 0;
   int next = -1;
@@ -234,7 +258,7 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
     if (contains(used, pair)) continue;
 
     // Calculate line score and save next pin with maximum score
-    double score = lineScore(image, lines.get(pair));
+    double score = lineScore(colorCMY, image, lines.get(pair));
     if (score > maxScore) {
       maxScore = score;
       next = i;
@@ -319,7 +343,9 @@ ArrayList<Point> pins;
 HashMap<String, ArrayList<Point>> lines;
 
 // List of steps that generate the pattern
-IntList steps;
+IntList stepsC;
+IntList stepsM;
+IntList stepsY;
 
 // Slider specifying the number of strings used
 Slider stringSlider;
@@ -361,10 +387,11 @@ void drawPins() {
 }
 
 // Draw strings
-void drawStrings() {
-  stroke(0, opacitySlider.value);
+void drawStrings(color col, IntList steps) {
+  stroke(col, opacitySlider.value);
   strokeWeight(1);
   noFill();
+  blendMode(SUBTRACT);
   randomSeed(0);
   int variation = lineVariationSlider.value;
   for (int i = 0; i < steps.size() - 1; i++) {
@@ -380,11 +407,18 @@ void drawStrings() {
     // Draw string as bezier curve
     bezier(a.x, a.y, c.x, c.y, c.x, c.y, b.x, b.y);
   }
+  blendMode(BLEND);
+}
+
+double max(double a, double b) {
+  return a > b ? a : b;
 }
 
 // Generate string pattern
 void generatePattern() {
-  steps = new IntList();
+  stepsC = new IntList();
+  stepsM = new IntList();
+  stepsY = new IntList();
   String stepsInstructions = "";
   
   // Work on copy of image
@@ -392,36 +426,67 @@ void generatePattern() {
   imgCopy.copy(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
   
   // Always start from pin 0
-  int current = 0;  
-  steps.append(current);
+  int currentC = 0;
+  int currentM = 0;
+  int currentY = 0;
+  stepsC.append(currentC);
+  stepsM.append(currentM);
+  stepsY.append(currentY);
   
-  StringList used = new StringList();
+  StringList usedC = new StringList();
+  StringList usedM = new StringList();
+  StringList usedY = new StringList();
   for (int i = 0; i < stringSlider.value; ++i) {
     // Get next pin
-    int next = nextPin(current, lines, used, imgCopy, minDistanceSlider.value);
-    if(next < 0) {
-      stringSlider.setValue(used.size());
-      break;
-    }
+    int nextC = nextPin(COLOR_C, currentC, lines, usedC, imgCopy, minDistanceSlider.value);
+    int nextM = nextPin(COLOR_M, currentM, lines, usedM, imgCopy, minDistanceSlider.value);
+    int nextY = nextPin(COLOR_Y, currentY, lines, usedY, imgCopy, minDistanceSlider.value);
     
-    // Reduce darkness in image
-    String pair = pinPair(current, next);
-    reduceLine(imgCopy, lines.get(pair), fadeSlider.value);
+    String pairC = pinPair(currentC, nextC);
+    String pairM = pinPair(currentM, nextM);
+    String pairY = pinPair(currentY, nextY);
+        
+    double scoreC = lineScore(COLOR_C, imgCopy, lines.get(pairC));
+    double scoreM = lineScore(COLOR_M, imgCopy, lines.get(pairM));
+    double scoreY = lineScore(COLOR_Y, imgCopy, lines.get(pairY));
+        
+    if (scoreC > max(scoreM, scoreY)) {
+      reduceLine(COLOR_C, imgCopy, lines.get(pairC), fadeSlider.value);
+      usedC.append(pairC);
+      stepsC.append(nextC);
+      currentC = nextC;
+    }
+    else if (scoreM > max(scoreC, scoreY)) {
+      reduceLine(COLOR_M, imgCopy, lines.get(pairM), fadeSlider.value);
+      usedM.append(pairM);
+      stepsM.append(nextM);
+      currentM = nextM;
+    }
+    else {
+      reduceLine(COLOR_Y, imgCopy, lines.get(pairY), fadeSlider.value);
+      usedY.append(pairY);
+      stepsY.append(nextY);
+      currentY = nextY;
+    }
 
-    String instruction = "String #" + i + " -> next pin: " + next + "\r\n";
-    print(instruction);
-    stepsInstructions += instruction;
-  
-    used.append(pair);
-    steps.append(next);
-    current = next;
+
+    //String instruction = "String #" + i + " -> next pin: " + next + "\r\n";
+    //print(instruction);
+    //stepsInstructions += instruction;
   }
   
-  println("Total thread length: " + totalThreadLength(steps, DIAMETER) + " m");
+  //noStroke();
+  //fill(255);
+  //rect(0, 0, SIZE, SIZE);
+  //image(imgCopy, 0, 0);
+  
+  //println("Total thread length: " + totalThreadLength(stepsC, DIAMETER) + " m");
   
   // Save instructions in two different formats
-  saveBytes("instruction.txt", stepsInstructions.getBytes());
-  saveInstructions("instruction.html", steps);
+  //saveBytes("instruction.txt", stepsInstructions.getBytes());
+  //saveInstructions("instruction.html", stepsC);
+
+  System.out.println("Instruction files are not created yet...we're working on it");
   
   redraw = true;
   redraw();
@@ -438,7 +503,6 @@ void setup() {
     exit();
     return;
   }
-  img.filter(GRAY);
   img.resize(SIZE, SIZE);
   cropImageCircle(img);
 
@@ -471,12 +535,18 @@ void setup() {
   generatePattern();
 }
 
+color COLOR_C = #00ffff;
+color COLOR_M = #ff00ff;
+color COLOR_Y = #ffff00;
+
 void draw() {
   // Draw string pattern if necessary
   if (redraw) {
     clearStrings();
     drawPins();
-    drawStrings();
+    drawStrings(#ff0000, stepsC);
+    drawStrings(#00ff00, stepsM);
+    drawStrings(#0000ff, stepsY);
     redraw = false;
   }
   // Draw sliders
