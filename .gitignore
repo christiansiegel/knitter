@@ -2,6 +2,7 @@ out/*
 
 *.jpg
 *.png
-*.html
+instruction.html
+instruction.txt
 
 !doc/*.png
