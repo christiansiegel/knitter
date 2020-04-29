@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Sketch",
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "${config:processing.path}",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "args": [
+		"--force",
+		"--sketch=${workspaceRoot}",
+		"--output=${workspaceRoot}/out",
+		"--run"
+	  ],
+      "windows": {
+        "args": [
+          "--force",
+          {
+            "value": "--sketch=${workspaceRoot}",
+            "quoting": "strong"
+          },
+          {
+            "value": "--output=${workspaceRoot}\\out",
+            "quoting": "strong"
+          },
+          "--run"
+        ]
+      }
+    }
+  ]
+}
