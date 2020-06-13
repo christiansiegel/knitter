@@ -8,8 +8,11 @@ final String FILENAME = "image.jpg";
 // Number of pins
 final int NR_PINS = 200;
 
-// Physical diameter (to calculate total thread length)
-final float DIAMETER = 0.8; // [m]
+// SQUARE or CIRCLE shape
+final Mode MODE = Mode.CIRCLE;
+
+// Real size to calculate total thread length (circle diameter or square size)
+final float REAL_SIZE = 0.8; // [m]
 
 ////////////////////////////////////////////////////////////////////////////////
 // DEFAULT VALUES
@@ -21,7 +24,7 @@ final int DEFAULT_STRINGS = 3000;
 // Default color value lines are darkened if a string runs through
 final int DEFAULT_FADE = 25;
 
-// Default minimal distance between two consecutive pins
+// Default minimal distance between two consecutive pins (only for CIRCLE mode)
 final int DEFAULT_MIN_DIST = 25;
 
 // Default value specifying how much the drawn lines vary from a straight 
@@ -119,6 +122,11 @@ class Slider {
   }
 }
 
+enum Mode {
+  CIRCLE,
+  SQUARE
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // GENERIC FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,14 +148,40 @@ void cropImageCircle(PImage image) {
   }
 }
 
-// Returns the coordinates of the circular pins based on their number, the
-// circle's center and radius.
-ArrayList<Point> calcCirclePins(int number, Point center, int radius) {
+// Returns the coordinates of the circular/square pins based on their number
+// and the size of the cirlce (diameter) or square (width and height).
+ArrayList<Point> calcPins(int number, int size, Mode mode) {
   ArrayList<Point> pins = new ArrayList<Point>();
-  final float angle = PI * 2.0 / number;
-  for (int i = 0; i < number; ++i) {
-    pins.add(new Point(round(center.x + radius * cos(i * angle)),
-                       round(center.y + radius * sin(i * angle))));
+  if (mode == Mode.CIRCLE) {
+    final float radius = size / 2.0;
+    final float angle = PI * 2.0 / number;
+    for (int i = 0; i < number; ++i) {
+      pins.add(new Point(round(radius + radius * cos(i * angle)),
+                         round(radius + radius * sin(i * angle))));
+    }
+  } else { // SQUARE
+    if (number % 4 != 0) {
+      println("Number of pins must be a multiple of 4 in SQUARE mode!");
+      return null;
+    }
+    int perSide = number / 4;
+    float spaceBetween = size / (perSide - 1);
+    // top left -> top right
+    for (int i = 0; i < perSide; ++i) {
+      pins.add(new Point(round(spaceBetween * i), 0));
+    }
+    // top right -> bottom right
+    for (int i = 0; i < perSide; ++i) {
+      pins.add(new Point(size, round(spaceBetween * i)));
+    }
+    // bottom right -> bottom left
+    for (int i = 0; i < perSide; ++i) {
+      pins.add(new Point(size - round(spaceBetween * i), size));
+    }
+    // bottom left -> top left
+    for (int i = 0; i < perSide; ++i) {
+      pins.add(new Point(0, size - round(spaceBetween * i)));
+    }
   }
   return pins;
 }
@@ -223,12 +257,20 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
   double maxScore = 0;
   int next = -1;
   for (int i = 0; i < NR_PINS; ++i) {
+    if (current == i) continue;
     String pair = pinPair(current, i);
     
-    // Prevent two consecutive pins with less than minimal distance
-    int diff = abs(current - i);
-    float dist = random(minDistance * 2/3, minDistance * 4/3);
-    if (diff < dist || diff > NR_PINS - dist) continue;
+    if (MODE == Mode.CIRCLE) {
+      // Prevent two consecutive pins with less than minimal distance
+      int diff = abs(current - i);
+      float dist = random(minDistance * 2/3, minDistance * 4/3);
+      if (diff < dist || diff > NR_PINS - dist) continue;
+    } else { // SQUARE
+      // Prevent two consecutive pins on the same side
+      int side_current = (current * 4) / NR_PINS;
+      int side_i = (i * 4) / NR_PINS;
+      if (side_current == side_i) continue;
+    }
   
     // Prevent usage of already used pin pair
     if (contains(used, pair)) continue;
@@ -243,9 +285,9 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
   return next;
 }
 
-// Calculates total thread length based on steps and circle diameter
-int totalThreadLength(IntList steps, float diameter) {
-  ArrayList<Point> p = calcCirclePins(NR_PINS, new Point(0,0) , int(diameter * 1000));
+// Calculates total thread length based on steps
+int totalThreadLength(IntList steps) {
+  ArrayList<Point> p = calcPins(NR_PINS, int(REAL_SIZE * 1000), MODE);
   float len = 0;
    for (int i = 0; i < steps.size() - 1; i++) {
       // Get pin pair
@@ -398,7 +440,7 @@ void generatePattern() {
   StringList used = new StringList();
   for (int i = 0; i < stringSlider.value; ++i) {
     // Get next pin
-    int next = nextPin(current, lines, used, imgCopy, minDistanceSlider.value);
+    int next = nextPin(current, lines, used, imgCopy, MODE == Mode.CIRCLE ? minDistanceSlider.value : -999);
     if(next < 0) {
       stringSlider.setValue(used.size());
       break;
@@ -417,7 +459,7 @@ void generatePattern() {
     current = next;
   }
   
-  println("Total thread length: " + totalThreadLength(steps, DIAMETER) + " m");
+  println("Total thread length: " + totalThreadLength(steps) + " m");
   
   // Save instructions in two different formats
   saveBytes("instruction.txt", stepsInstructions.getBytes());
@@ -440,13 +482,16 @@ void setup() {
   }
   img.filter(GRAY);
   img.resize(SIZE, SIZE);
-  cropImageCircle(img);
+  if (MODE == Mode.CIRCLE) {
+    cropImageCircle(img);
+  }
 
-  // Calculate circular pins
-  Point center = new Point(round(img.width / 2.0),
-                           round(img.height / 2.0));
-  int radius = SIZE / 2;
-  pins = calcCirclePins(NR_PINS, center, radius);
+  // Calculate pins
+  pins = calcPins(NR_PINS, SIZE, MODE);
+  if (pins == null) {
+    exit();
+    return;
+  }
 
   // Calculate the pixels of all possible lines
   lines = new HashMap<String, ArrayList<Point>>();
@@ -459,7 +504,9 @@ void setup() {
   // Init sliders
   stringSlider = new Slider(5, SIZE + 10, width - 10, 20, DEFAULT_STRINGS, 0, 10000, "strings");
   fadeSlider = new Slider(5, SIZE + 35, width - 10, 20, DEFAULT_FADE, 0, 255, "fade");
-  minDistanceSlider = new Slider(5, SIZE + 60, width - 10, 20, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "average minimal distance");
+  if (MODE == Mode.CIRCLE) {
+    minDistanceSlider = new Slider(5, SIZE + 60, width - 10, 20, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "average minimal distance");
+  }
   lineVariationSlider = new Slider(5, SIZE + 85, width - 10, 20, DEFAULT_LINE_VARATION, 0, 20, "line variation");
   opacitySlider = new Slider(5, SIZE + 110, width - 10, 20, DEFAULT_OPACITY, 0, 100, "opacity");
 
@@ -483,7 +530,7 @@ void draw() {
   stringSlider.drawSelf();
   fadeSlider.drawSelf();
   lineVariationSlider.drawSelf();
-  minDistanceSlider.drawSelf();
+  if (MODE == Mode.CIRCLE) minDistanceSlider.drawSelf();
   opacitySlider.drawSelf();
 }
 
