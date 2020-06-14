@@ -450,43 +450,44 @@ void generatePattern() {
     double scoreM = lineScore(COLOR_M, imgCopy, lines.get(pairM));
     double scoreY = lineScore(COLOR_Y, imgCopy, lines.get(pairY));
         
+    String instruction = "String #" + i;
+
     if (scoreC > max(scoreM, scoreY)) {
       reduceLine(COLOR_C, imgCopy, lines.get(pairC), fadeSlider.value);
       usedC.append(pairC);
       stepsC.append(nextC);
       currentC = nextC;
+      instruction += " (cyan) -> next pin: " + nextC + "\r\n";
     }
     else if (scoreM > max(scoreC, scoreY)) {
       reduceLine(COLOR_M, imgCopy, lines.get(pairM), fadeSlider.value);
       usedM.append(pairM);
       stepsM.append(nextM);
       currentM = nextM;
+      instruction += " (magenta) -> next pin: " + nextM + "\r\n";
     }
     else {
       reduceLine(COLOR_Y, imgCopy, lines.get(pairY), fadeSlider.value);
       usedY.append(pairY);
       stepsY.append(nextY);
       currentY = nextY;
+      instruction += " (yellow) -> next pin: " + nextY + "\r\n";
     }
 
-
-    //String instruction = "String #" + i + " -> next pin: " + next + "\r\n";
-    //print(instruction);
-    //stepsInstructions += instruction;
+    print(instruction);
+    stepsInstructions += instruction;
   }
   
-  //noStroke();
-  //fill(255);
-  //rect(0, 0, SIZE, SIZE);
-  //image(imgCopy, 0, 0);
-  
-  //println("Total thread length: " + totalThreadLength(stepsC, DIAMETER) + " m");
+  println("Total thread length (cyan): " + totalThreadLength(stepsC, DIAMETER) + " m");
+  println("Total thread length (magenta): " + totalThreadLength(stepsM, DIAMETER) + " m");
+  println("Total thread length (yellow): " + totalThreadLength(stepsY, DIAMETER) + " m");
   
   // Save instructions in two different formats
-  //saveBytes("instruction.txt", stepsInstructions.getBytes());
+  saveBytes("instruction.txt", stepsInstructions.getBytes());
   //saveInstructions("instruction.html", stepsC);
 
-  System.out.println("Instruction files are not created yet...we're working on it");
+  System.out.println("Saved instructions to instruction.txt");
+  System.out.println("instruction.html file is not created yet...we're working on it");
   
   redraw = true;
   redraw();
