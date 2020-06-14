@@ -398,7 +398,7 @@ void drawPins() {
   noStroke();
   fill(0);
   for (Point p : pins) {
-    rect(width - SIZE + p.x, p.y, 2, 2);
+    rect(width - SIZE + p.x - 1, p.y - 1, 2, 2);
   }
 }
 
