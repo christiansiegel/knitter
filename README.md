@@ -1,6 +1,6 @@
 # knitter
 
-knitter is an open software to generate a circular knitting pattern from a picture.
+knitter is an open software to generate a circular/square knitting pattern from a picture.
  
 The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrellis/works/knit.html).
 
@@ -14,7 +14,7 @@ The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrelli
 1. Clone the repository (or just download [knitter.pde](https://raw.githubusercontent.com/christiansiegel/knitter/master/knitter.pde))
 2. Copy your square, grayscale image into the same folder as the `knitter.pde` and name it `image.jpg`.
 3. Open `knitter.pde` with the [Processing IDE](https://processing.org/).
-4. Modify the configuration parameters at the top of the file (optional).
+4. Modify the configuration parameters at the top of the file (optional). You can also choose between *CIRCLE* and a *SQUARE* mode here.
 5. Run Sketch.
 6. Find the best parameters using the sliders.
 
