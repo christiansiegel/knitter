@@ -422,7 +422,7 @@ void drawStrings() {
 // Generate string pattern
 void generatePattern() {
   steps = new IntList();
-  String stepsInstructions = "";
+  StringBuilder stepsInstructions = new StringBuilder();
   
   // Work on copy of image
   PImage imgCopy = createImage(img.width, img.height, RGB);
@@ -445,9 +445,7 @@ void generatePattern() {
     int pair = pinPair(current, next);
     reduceLine(imgCopy, lines.get(pair), fadeSlider.value);
 
-    String instruction = "String #" + i + " -> next pin: " + next + "\r\n";
-    print(instruction);
-    stepsInstructions += instruction;
+    stepsInstructions.append("String #").append(i).append(" -> next pint: ").append(next).append("\r\n");
   
     used.add(pair);
     steps.append(next);
@@ -457,7 +455,7 @@ void generatePattern() {
   println("Total thread length: " + totalThreadLength(steps) + " m");
   
   // Save instructions in two different formats
-  saveBytes("instruction.txt", stepsInstructions.getBytes());
+  saveBytes("instruction.txt", stepsInstructions.toString().getBytes());
   saveInstructions("instruction.html", steps);
   
   redraw = true;

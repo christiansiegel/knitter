@@ -27,7 +27,7 @@ While running the Sketch, a simulated result is shown in the window.
 
 ## Instructions
 
-The knitting order is printed to the console and saved to `instruction.txt`. 
+The knitting order is saved to `instruction.txt`. 
 
 ```
 String #1454 -> next pin: 84
