@@ -6,8 +6,9 @@ The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrelli
 
 ## Uses and Derivatives
 
-* http://imgur.com/gallery/pN5T9
-* https://github.com/MaloDrougard/knit
+* [Mona Lisa](https://youtu.be/Gx26zk3MpWo) by [Anwer Al-Chalabi](https://www.youtube.com/channel/UCHSDv-MMYOPMMpnS9q8XsCA)
+* [Dog portrait](https://imgur.com/gallery/pN5T9) by [Wtfacoconut](https://imgur.com/user/Wtfacoconut)
+* Similar [algorithm using Qt/C++](https://github.com/MaloDrougard/knit) by [MaloDrougard](https://github.com/MaloDrougard) (also includes an interesting [report](https://github.com/MaloDrougard/knit/blob/master/Doc/knit-final-report.pdf) on the topic)
 
 # How to use it
 
