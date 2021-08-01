@@ -278,46 +278,23 @@ int totalThreadLength(IntList steps, float diameter) {
    return int(len/1000);
 }
 
-void saveInstructions(String filename, IntList steps) {
-  String html = "<!DOCTYPE html><html> <head> <meta content=\"text/html;chars" + 
-                "et=utf-8\" http-equiv=\"Content-Type\"/> <style>*{box-sizing" + 
-                ": border-box;}body{-webkit-touch-callout: none; -webkit-user" + 
-                "-select: none; -khtml-user-select: none; -moz-user-select: n" + 
-                "one; -ms-user-select: none; user-select: none;}div{text-alig" + 
-                "n: center; font-family: sans-serif; line-height: 150%; text-" + 
-                "shadow: 0 2px 2px #b6701e; height: 100%; color: #fff;}p{font" + 
-                "-size: 4vw;}input{width: 100%; text-align: center;}.pin{posi" + 
-                "tion: absolute; top: 50%; left: 50%; transform: translate(-5" + 
-                "0%, -50%); width: 100%; padding: 20px; font-size: 16vw;}.con" + 
-                "tainer{display: table; width: 100%;}.left-half{background-co" + 
-                "lor: #0071DC; position: absolute; left: 0px; width: 50%;}.ri" + 
-                "ght-half{background-color: #002B5B; position: absolute; righ" + 
-                "t: 0px; width: 50%;}#step-input{font-size: 3vw;}</style> <sc" + 
-                "ript src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.1." + 
-                "1/jquery.min.js\"> </script> <script src='https://code.respo" + 
-                "nsivevoice.org/responsivevoice.js'></script> <script type=\"" + 
-                "text/javascript\">var stepList=[\"start\",0,\"end\"]; var cu" + 
-                "rrent=0; function previous(){if (current > 0){current--; sho" + 
-                "wStep();}}function next(){if (current < stepList.length - 2)" + 
-                "{current++; showStep();}}function showStep(){$(\"#from-pin\"" + 
-                ").text(stepList[current]); $(\"#to-pin\").text(stepList[curr" + 
-                "ent + 1]); $(\"#step-input\").val(current); responsiveVoice." + 
-                "speak((stepList[current + 1]).toString());}function jumpToSt" + 
-                "ep(){current=parseInt($(\"#step-input\").val()); if (current" + 
-                " < 0) current=0; else if (current > stepList.length - 2) cur" + 
-                "rent=stepList.length - 2; showStep();}</script> <title>knitt" + 
-                "er</title> </head> <body onload=\"showStep()\"> <section cla" + 
-                "ss=\"container\"> <input id=\"step-input\" onchange=\"jumpTo" + 
-                "Step()\" type=\"tel\"> <div class=\"left-half\" onclick=\"pr" + 
-                "evious()\"> <p>from</p><span class=\"pin\" id=\"from-pin\">?" + 
-                "??</span> </div><div class=\"right-half\" onclick=\"next()\"" + 
-                "> <p>to</p><span class=\"pin\" id=\"to-pin\">???</span> </di" + 
-                "v></section> </body></html>";
-  String list = ",";
-  for (int i = 0; i < steps.size(); i++) {
-    list += steps.get(i) + ",";
+void saveInstructions(String filename, IntList stepsC, IntList stepsM, IntList stepsY) {
+  String html = "<!DOCTYPE html><html><head><meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\"><style>*{box-sizing:border-box}body{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}div{text-align:center;font-family:sans-serif;line-height:150%;text-shadow:0 2px 2px #b6701e;height:100%;color:#fff}p{font-size:4vw}input{width:100%;text-align:center}.pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;padding:20px;font-size:16vw}.container{display:table;width:100%}.left-half{background-color:gray;position:absolute;left:0;width:50%}.right-half{position:absolute;right:0;width:50%;color:#000}.cyan-bg{background-color:#0ff}.magenta-bg{background-color:#ff00ff}.yellow-bg{background-color:#ff0}#step-input{font-size:3vw}</style><script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js\"></script><script type=\"text/javascript\">var stepList0=[\"start\",0c,\"end\"],stepList1=[\"start\",0m,\"end\"],stepList2=[\"start\",0y,\"end\"],maxCurrent=3*(stepList0.length-1)-1,current=0;function previous(){0<current&&(current--,showStep())}function next(){current<maxCurrent&&(current++,showStep())}function showStep(){var t=Math.floor(current/3),e=current%3,r=stepList2,n=\"yellow-bg\";0==e?(r=stepList0,n=\"magenta-bg\"):1==e&&(r=stepList1,n=\"cyan-bg\"),$(\"#from-pin\").text(r[t]),$(\"#to-pin\").text(r[t+1]),$(\"#step-input\").val(current),$(\".right-half\").removeClass(\"cyan-bg\"),$(\".right-half\").removeClass(\"magenta-bg\"),$(\".right-half\").removeClass(\"yellow-bg\"),$(\".right-half\").addClass(n)}function jumpToStep(){(current=parseInt($(\"#step-input\").val()))<0?current=0:maxCurrent<current&&(current=maxCurrent),showStep()}</script><title>knitter</title></head><body onload=\"showStep()\"><section class=\"container\"><input id=\"step-input\" onchange=\"jumpToStep()\" type=\"tel\"><div class=\"left-half\" onclick=\"previous()\"><p>from</p><span class=\"pin\" id=\"from-pin\">???</span></div><div class=\"right-half\" onclick=\"next()\"><p>to</p><span class=\"pin\" id=\"to-pin\">???</span></div></section></body></html>";
+  String listC = ",";
+  String listM = ",";
+  String listY = ",";
+  for (int i = 0; i < stepsC.size(); i++) {
+    listC += stepsC.get(i) + ",";
   }
-  html = html.replace(",0,", list);
+  for (int i = 0; i < stepsM.size(); i++) {
+    listM += stepsM.get(i) + ",";
+  }
+  for (int i = 0; i < stepsY.size(); i++) {
+    listY += stepsY.get(i) + ",";
+  }
+  html = html.replace(",0c,", listC);
+  html = html.replace(",0m,", listM);
+  html = html.replace(",0y,", listY);
   saveBytes(filename, html.getBytes());
 }
 
@@ -468,10 +445,9 @@ void generatePattern() {
   
   // Save instructions in two different formats
   saveBytes("instruction.txt", stepsInstructions.toString().getBytes());
-  //saveInstructions("instruction.html", stepsC);
+  saveInstructions("instruction.html", stepsC, stepsM, stepsY);
 
-  System.out.println("Saved instructions to instruction.txt");
-  System.out.println("instruction.html file is not created yet...we're working on it");
+  System.out.println("Saved instructions to instruction.txt and instructions.html");
   
   redraw = true;
   redraw();
