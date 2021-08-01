@@ -1,3 +1,5 @@
+import java.util.HashSet;
+
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +111,7 @@ class Slider {
 
   // Check if mouse is pressed on slider and update value accordingly.
   // True is returned if value was changed.
-  Boolean handleMousePressed() {
+  boolean handleMousePressed() {
     if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
       float v = (float)(mouseX - x) / w;
       int newValue = round(min + abs(max - min) * v);
@@ -240,20 +242,13 @@ String pinPair(int a, int b) {
   return a < b ? a + "-" + b : b + "-" + a; 
 }
 
-// Returns true if the list contains a specific element.
-Boolean contains(StringList list, String element) {
-  for (String e : list)
-    if (e.equals(element)) return true;
-  return false;
-}
-
 // Returns the next pin, so that the string from the current pin achieves the
 // maximum score. To prevent a string path from beeing used twice, a list of 
 // already used pin pairs can be given. The minimum distance between to 
 // consecutive pins is specified by minDistance. If no valid next pin can be 
 // found -1 is returned.
 int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
-            StringList used, PImage image, int minDistance) {
+            HashSet<String> used, PImage image, int minDistance) {
   double maxScore = 0;
   int next = -1;
   for (int i = 0; i < NR_PINS; ++i) {
@@ -273,7 +268,7 @@ int nextPin(int current, HashMap<String, ArrayList<Point>> lines,
     }
   
     // Prevent usage of already used pin pair
-    if (contains(used, pair)) continue;
+    if (used.contains(pair)) continue;
 
     // Calculate line score and save next pin with maximum score
     double score = lineScore(image, lines.get(pair));
@@ -380,7 +375,7 @@ Slider opacitySlider;
 Slider minDistanceSlider;
 
 // Causes string pattern to be redrawn on next draw()
-Boolean redraw = false;
+boolean redraw = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS USING GLOBAL VARIABLES
@@ -437,7 +432,7 @@ void generatePattern() {
   int current = 0;  
   steps.append(current);
   
-  StringList used = new StringList();
+  HashSet<String> used = new HashSet<String>();
   for (int i = 0; i < stringSlider.value; ++i) {
     // Get next pin
     int next = nextPin(current, lines, used, imgCopy, MODE == Mode.CIRCLE ? minDistanceSlider.value : -999);
@@ -454,7 +449,7 @@ void generatePattern() {
     print(instruction);
     stepsInstructions += instruction;
   
-    used.append(pair);
+    used.add(pair);
     steps.append(next);
     current = next;
   }
