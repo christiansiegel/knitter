@@ -5,7 +5,7 @@ import java.util.HashSet;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Image's filename. Should be a square image.
-final String FILENAME = "img.jpg";
+final String FILENAME = "pop2.jpg";
 
 // Number of pins
 final int NR_PINS = 200;
@@ -414,7 +414,7 @@ void generatePattern() {
   stepsC = new IntList();
   stepsM = new IntList();
   stepsY = new IntList();
-  String stepsInstructions = "";
+  StringBuilder stepsInstructions = new StringBuilder();
   
   // Work on copy of image
   PImage imgCopy = createImage(img.width, img.height, RGB);
@@ -441,36 +441,25 @@ void generatePattern() {
     String pairM = pinPair(currentM, nextM);
     String pairY = pinPair(currentY, nextY);
         
-    double scoreC = lineScore(COLOR_C, imgCopy, lines.get(pairC));
-    double scoreM = lineScore(COLOR_M, imgCopy, lines.get(pairM));
-    double scoreY = lineScore(COLOR_Y, imgCopy, lines.get(pairY));
-        
-    String instruction = "String #" + i;
+    stepsInstructions.append("String #").append(i).append("\r\n");
 
-    if (scoreC > max(scoreM, scoreY)) {
-      reduceLine(COLOR_C, imgCopy, lines.get(pairC), fadeSlider.value);
-      usedC.add(pairC);
-      stepsC.append(nextC);
-      currentC = nextC;
-      instruction += " (cyan) -> next pin: " + nextC + "\r\n";
-    }
-    else if (scoreM > max(scoreC, scoreY)) {
-      reduceLine(COLOR_M, imgCopy, lines.get(pairM), fadeSlider.value);
-      usedM.add(pairM);
-      stepsM.append(nextM);
-      currentM = nextM;
-      instruction += " (magenta) -> next pin: " + nextM + "\r\n";
-    }
-    else {
-      reduceLine(COLOR_Y, imgCopy, lines.get(pairY), fadeSlider.value);
-      usedY.add(pairY);
-      stepsY.append(nextY);
-      currentY = nextY;
-      instruction += " (yellow) -> next pin: " + nextY + "\r\n";
-    }
+    reduceLine(COLOR_C, imgCopy, lines.get(pairC), fadeSlider.value);
+    usedC.add(pairC);
+    stepsC.append(nextC);
+    currentC = nextC;
+    stepsInstructions.append("    cyan -> next pin: ").append(nextC).append("\r\n");
 
-    print(instruction);
-    stepsInstructions += instruction;
+    reduceLine(COLOR_M, imgCopy, lines.get(pairM), fadeSlider.value);
+    usedM.add(pairM);
+    stepsM.append(nextM);
+    currentM = nextM;
+    stepsInstructions.append(" magenta -> next pin: ").append(nextM).append("\r\n");
+
+    reduceLine(COLOR_Y, imgCopy, lines.get(pairY), fadeSlider.value);
+    usedY.add(pairY);
+    stepsY.append(nextY);
+    currentY = nextY;
+    stepsInstructions.append("  yellow -> next pin: ").append(nextY).append("\r\n");
   }
   
   println("Total thread length (cyan): " + totalThreadLength(stepsC, DIAMETER) + " m");
@@ -478,7 +467,7 @@ void generatePattern() {
   println("Total thread length (yellow): " + totalThreadLength(stepsY, DIAMETER) + " m");
   
   // Save instructions in two different formats
-  saveBytes("instruction.txt", stepsInstructions.getBytes());
+  saveBytes("instruction.txt", stepsInstructions.toString().getBytes());
   //saveInstructions("instruction.html", stepsC);
 
   System.out.println("Saved instructions to instruction.txt");
