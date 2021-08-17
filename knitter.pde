@@ -374,6 +374,7 @@ void drawPins() {
 
 // Draw strings
 void drawStrings(color col, IntList steps) {
+  col ^= 0xffffff;
   stroke(col, opacitySlider.value);
   strokeWeight(1);
   noFill();
@@ -541,10 +542,10 @@ void draw() {
   if (redraw) {
     clearStrings();
     drawPins();
-    drawStrings(#ff0000, stepsC);
-    drawStrings(#00ff00, stepsM);
-    drawStrings(#0000ff, stepsY);
-    drawStrings(#ffffff, stepsK);
+    drawStrings(COLOR_C, stepsC);
+    drawStrings(COLOR_M, stepsM);
+    drawStrings(COLOR_Y, stepsY);
+    drawStrings(COLOR_K, stepsK);
     redraw = false;
   }
   // Draw sliders
