@@ -391,7 +391,9 @@ void generatePattern() {
   stepsC = new IntList();
   stepsM = new IntList();
   stepsY = new IntList();
-  StringBuilder stepsInstructions = new StringBuilder();
+  StringBuilder stepsInstructionsC = new StringBuilder();
+  StringBuilder stepsInstructionsM = new StringBuilder();
+  StringBuilder stepsInstructionsY = new StringBuilder();
   
   // Work on copy of image
   PImage imgCopy = createImage(img.width, img.height, RGB);
@@ -417,26 +419,24 @@ void generatePattern() {
     String pairC = pinPair(currentC, nextC);
     String pairM = pinPair(currentM, nextM);
     String pairY = pinPair(currentY, nextY);
-        
-    stepsInstructions.append("String #").append(i).append("\r\n");
 
     reduceLine(COLOR_C, imgCopy, lines.get(pairC), fadeSlider.value);
     usedC.add(pairC);
     stepsC.append(nextC);
     currentC = nextC;
-    stepsInstructions.append("    cyan -> next pin: ").append(nextC).append("\r\n");
+    stepsInstructionsC.append("String #").append(i).append(" next pin: ").append(nextC).append("\r\n");
 
     reduceLine(COLOR_M, imgCopy, lines.get(pairM), fadeSlider.value);
     usedM.add(pairM);
     stepsM.append(nextM);
     currentM = nextM;
-    stepsInstructions.append(" magenta -> next pin: ").append(nextM).append("\r\n");
+    stepsInstructionsM.append("String #").append(i).append(" next pin: ").append(nextM).append("\r\n");
 
     reduceLine(COLOR_Y, imgCopy, lines.get(pairY), fadeSlider.value);
     usedY.add(pairY);
     stepsY.append(nextY);
     currentY = nextY;
-    stepsInstructions.append("  yellow -> next pin: ").append(nextY).append("\r\n");
+    stepsInstructionsY.append("String #").append(i).append(" next pin: ").append(nextY).append("\r\n");
   }
   
   println("Total thread length (cyan): " + totalThreadLength(stepsC, DIAMETER) + " m");
@@ -444,7 +444,9 @@ void generatePattern() {
   println("Total thread length (yellow): " + totalThreadLength(stepsY, DIAMETER) + " m");
   
   // Save instructions in two different formats
-  saveBytes("instruction.txt", stepsInstructions.toString().getBytes());
+  saveBytes("instruction_cyan.txt", stepsInstructionsC.toString().getBytes());
+  saveBytes("instruction_magenta.txt", stepsInstructionsM.toString().getBytes());
+  saveBytes("instruction_yellow.txt", stepsInstructionsY.toString().getBytes());
   saveInstructions("instruction.html", stepsC, stepsM, stepsY);
 
   System.out.println("Saved instructions to instruction.txt and instructions.html");
