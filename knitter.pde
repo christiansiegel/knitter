@@ -480,7 +480,7 @@ void generatePattern() {
   saveBytes("instruction_cyan.txt", stepsInstructionsC.toString().getBytes());
   saveBytes("instruction_magenta.txt", stepsInstructionsM.toString().getBytes());
   saveBytes("instruction_yellow.txt", stepsInstructionsY.toString().getBytes());
-  saveBytes("instruction_key.txt", stepsInstructionsY.toString().getBytes());
+  saveBytes("instruction_key.txt", stepsInstructionsK.toString().getBytes());
   saveInstructions("instruction.html", stepsC, stepsM, stepsY);
 
   System.out.println("Saved instructions to instruction.txt and instructions.html");
