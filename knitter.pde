@@ -7,6 +7,8 @@ import java.util.HashSet;
 // Image's filename. Should be a square image.
 final String FILENAME = "pop2.jpg";
 
+final boolean ENABLE_KEY = false; // enable black with "= true"
+
 // Number of pins
 final int NR_PINS = 200;
 
@@ -185,18 +187,25 @@ double lineScore(color colorCMY, PImage image, ArrayList<Point> points) {
   int score = 0;
   for (Point p : points) {
     int pixel = image.get(p.y, p.x);
-    if (colorCMY == COLOR_C) {
+    if (colorCMY == COLOR_C || colorCMY == COLOR_K) {
       int r = (pixel >> 16) & 0xff;
       score += 0xff - r;
     }
-    else if (colorCMY == COLOR_M) {
+    else if (colorCMY == COLOR_M || colorCMY == COLOR_K) {
       int g = (pixel >> 8) & 0xff;
       score += 0xff - g;
     }
-    else {
+    else if (colorCMY == COLOR_Y || colorCMY == COLOR_K) {
       int b = pixel & 0xff;
       score += 0xff - b;
     }
+    else {
+      println("Error: Unknown color!");
+      exit();
+    }
+  }
+  if (colorCMY == COLOR_K) {
+    score /= 3;
   }
   return (double)score / points.size();
 }
@@ -209,17 +218,21 @@ void reduceLine(color colorCMY, PImage image, ArrayList<Point> points, int value
     int r = (pixel >> 16) & 0xff;
     int g = (pixel >> 8) & 0xff;
     int b = pixel & 0xff;
-    if (colorCMY == COLOR_C) {
+    if (colorCMY == COLOR_C || colorCMY == COLOR_K) {
       r += value;
       if (r > 0xff) r = 0xff;
     }
-    else if (colorCMY == COLOR_M) {
+    else if (colorCMY == COLOR_M || colorCMY == COLOR_K) {
       g += value;
       if (g > 0xff) g = 0xff;
     }
-    else {
+    else if (colorCMY == COLOR_Y || colorCMY == COLOR_K) {
       b += value;
       if (b > 0xff) b = 0xff;
+    }
+    else {
+      println("Error: Unknown color!");
+      exit();
     }
     image.set(p.y, p.x, color(r, g, b));
   }
@@ -318,6 +331,7 @@ HashMap<String, ArrayList<Point>> lines;
 IntList stepsC;
 IntList stepsM;
 IntList stepsY;
+IntList stepsK;
 
 // Slider specifying the number of strings used
 Slider stringSlider;
@@ -391,9 +405,11 @@ void generatePattern() {
   stepsC = new IntList();
   stepsM = new IntList();
   stepsY = new IntList();
+  stepsK = new IntList();
   StringBuilder stepsInstructionsC = new StringBuilder();
   StringBuilder stepsInstructionsM = new StringBuilder();
   StringBuilder stepsInstructionsY = new StringBuilder();
+  StringBuilder stepsInstructionsK = new StringBuilder();
   
   // Work on copy of image
   PImage imgCopy = createImage(img.width, img.height, RGB);
@@ -403,13 +419,17 @@ void generatePattern() {
   int currentC = 0;
   int currentM = 0;
   int currentY = 0;
+  int currentK = 0;
   stepsC.append(currentC);
   stepsM.append(currentM);
   stepsY.append(currentY);
+  stepsK.append(currentK);
   
   HashSet<String> usedC = new HashSet<String>();
   HashSet<String> usedM = new HashSet<String>();
   HashSet<String> usedY = new HashSet<String>();
+  HashSet<String> usedK = new HashSet<String>();
+
   for (int i = 0; i < stringSlider.value; ++i) {
     // Get next pin
     int nextC = nextPin(COLOR_C, currentC, lines, usedC, imgCopy, minDistanceSlider.value);
@@ -437,16 +457,29 @@ void generatePattern() {
     stepsY.append(nextY);
     currentY = nextY;
     stepsInstructionsY.append("String #").append(i).append(" next pin: ").append(nextY).append("\r\n");
+
+    if (ENABLE_KEY) {
+      int nextK = nextPin(COLOR_K, currentK, lines, usedK, imgCopy, minDistanceSlider.value);
+      String pairK = pinPair(currentK, nextK);
+      
+      reduceLine(COLOR_K, imgCopy, lines.get(pairK), fadeSlider.value);
+      usedK.add(pairK);
+      stepsK.append(nextK);
+      currentK = nextK;
+      stepsInstructionsK.append("String #").append(i).append(" next pin: ").append(nextK).append("\r\n");
+    }
   }
   
   println("Total thread length (cyan): " + totalThreadLength(stepsC, DIAMETER) + " m");
   println("Total thread length (magenta): " + totalThreadLength(stepsM, DIAMETER) + " m");
   println("Total thread length (yellow): " + totalThreadLength(stepsY, DIAMETER) + " m");
+  println("Total thread length (key): " + totalThreadLength(stepsK, DIAMETER) + " m");
   
   // Save instructions in two different formats
   saveBytes("instruction_cyan.txt", stepsInstructionsC.toString().getBytes());
   saveBytes("instruction_magenta.txt", stepsInstructionsM.toString().getBytes());
   saveBytes("instruction_yellow.txt", stepsInstructionsY.toString().getBytes());
+  saveBytes("instruction_key.txt", stepsInstructionsY.toString().getBytes());
   saveInstructions("instruction.html", stepsC, stepsM, stepsY);
 
   System.out.println("Saved instructions to instruction.txt and instructions.html");
@@ -501,6 +534,7 @@ void setup() {
 color COLOR_C = #00ffff;
 color COLOR_M = #ff00ff;
 color COLOR_Y = #ffff00;
+color COLOR_K = #000000;
 
 void draw() {
   // Draw string pattern if necessary
@@ -510,6 +544,7 @@ void draw() {
     drawStrings(#ff0000, stepsC);
     drawStrings(#00ff00, stepsM);
     drawStrings(#0000ff, stepsY);
+    drawStrings(#ffffff, stepsK);
     redraw = false;
   }
   // Draw sliders
