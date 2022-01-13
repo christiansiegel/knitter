@@ -41,36 +41,29 @@ final int DEFAULT_OPACITY = 50;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Simple point class storing x and y coordinates of a point.
-class Point {
-  int x;
-  int y;
+static class Point {
+  final int x;
+  final int y;
 
-  Point() {
-    this.x = 0;
-    this.y = 0;
-  }
-
-  Point(int x, int y) {
+  private Point(int x, int y) {
     this.x = x;
     this.y = y;
   }
   
-  public Point(Point p) {
-    this.x = p.x;
-    this.y = p.y;
+  static Point of(int x, int y) {
+    return new Point(x, y);
   }
 
-  public String toString() { 
-    return "(" + x + ", " + y + ")"; 
+  String toString() { 
+    return String.format("(%s, %s)", x, y); 
   }
 }
 
 // Simple slider control for integer values.
 class Slider {
-  int x, y;
-  int w, h;
-  int value, min, max;
-  String text;
+  private final int x, y, w, h, min, max;
+  private final String text;
+  private int value;
 
   Slider(int x, int y, int w, int h, int value, int min, int max, String text) {
     this.x = x;
@@ -136,8 +129,8 @@ enum Mode {
 // Crops image to a circular shape.
 void cropImageCircle(PImage image) {
   final color white = color(255);
-  final Point center = new Point(round(image.width / 2.0), 
-                                 round(image.height / 2.0));
+  final Point center = Point.of(round(image.width / 2.0), 
+                                round(image.height / 2.0));
   final int radius = image.width < image.height 
                    ? round(image.width / 2.0) 
                    : round(image.height / 2.0);
@@ -158,7 +151,7 @@ ArrayList<Point> calcPins(int number, int size, Mode mode) {
     final float radius = size / 2.0;
     final float angle = PI * 2.0 / number;
     for (int i = 0; i < number; ++i) {
-      pins.add(new Point(round(radius + radius * cos(i * angle)),
+      pins.add(Point.of(round(radius + radius * cos(i * angle)),
                          round(radius + radius * sin(i * angle))));
     }
   } else { // SQUARE
@@ -170,19 +163,19 @@ ArrayList<Point> calcPins(int number, int size, Mode mode) {
     float spaceBetween = size / (perSide - 1);
     // top left -> top right
     for (int i = 0; i < perSide; ++i) {
-      pins.add(new Point(round(spaceBetween * i), 0));
+      pins.add(Point.of(round(spaceBetween * i), 0));
     }
     // top right -> bottom right
     for (int i = 0; i < perSide; ++i) {
-      pins.add(new Point(size, round(spaceBetween * i)));
+      pins.add(Point.of(size, round(spaceBetween * i)));
     }
     // bottom right -> bottom left
     for (int i = 0; i < perSide; ++i) {
-      pins.add(new Point(size - round(spaceBetween * i), size));
+      pins.add(Point.of(size - round(spaceBetween * i), size));
     }
     // bottom left -> top left
     for (int i = 0; i < perSide; ++i) {
-      pins.add(new Point(0, size - round(spaceBetween * i)));
+      pins.add(Point.of(0, size - round(spaceBetween * i)));
     }
   }
   return pins;
@@ -191,23 +184,24 @@ ArrayList<Point> calcPins(int number, int size, Mode mode) {
 // Returns vector of pixels a line from a to b passes through.
 ArrayList<Point> linePixels(Point a, Point b) {
   ArrayList<Point> points = new ArrayList<Point>();
-  int dx = abs(b.x - a.x);
-  int dy = -abs(b.y - a.y);
-  int sx = a.x < b.x ? 1 : -1;
-  int sy = a.y < b.y ? 1 : -1;
+  final int dx = abs(b.x - a.x);
+  final int dy = -abs(b.y - a.y);
+  final int sx = a.x < b.x ? 1 : -1;
+  final int sy = a.y < b.y ? 1 : -1;
   int e = dx + dy, e2;
-  a = new Point(a);
+  int px = a.x;
+  int py = a.y;
   while (true) {
-    points.add(new Point(a));
-    if (a.x == b.x && a.y == b.y) break;
+    points.add(Point.of(px, py));
+    if (px == b.x && py == b.y) break;
     e2 = 2 * e;
     if (e2 > dy) {
       e += dy;
-      a.x += sx;
+      px += sx;
     }
     if (e2 < dx) {
       e += dx;
-      a.y += sy;
+      py += sy;
     }
   }
   return points;
@@ -409,10 +403,10 @@ void drawStrings() {
     Point a = pins.get(steps.get(i));
     Point b = pins.get(steps.get(i + 1));
     // Move pin pair to output location
-    a = new Point(width - SIZE + a.y, a.x);
-    b = new Point(width - SIZE + b.y, b.x);
+    a = Point.of(width - SIZE + a.y, a.x);
+    b = Point.of(width - SIZE + b.y, b.x);
     // Generate third point to introduce line variation (bezier control point)
-    Point c = new Point(round(random(-variation, variation) + (a.x + b.x) / 2),
+    Point c = Point.of(round(random(-variation, variation) + (a.x + b.x) / 2),
                         round(random(-variation, variation) + (a.y + b.y) / 2));
     // Draw string as bezier curve
     bezier(a.x, a.y, c.x, c.y, c.x, c.y, b.x, b.y);
