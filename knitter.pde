@@ -533,7 +533,9 @@ void mouseReleased() {
 
   generateNeeded |= stringSlider.handleMousePressed();
   generateNeeded |= fadeSlider.handleMousePressed();
-  generateNeeded |= minDistanceSlider.handleMousePressed();
+  if (minDistanceSlider != null) {
+    generateNeeded |= minDistanceSlider.handleMousePressed();
+  }
 
   redrawNeeded |= lineVariationSlider.handleMousePressed();
   redrawNeeded |= opacitySlider.handleMousePressed();
