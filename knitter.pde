@@ -4,16 +4,16 @@ import java.util.HashSet;
 // CONFIGURATION
 ////////////////////////////////////////////////////////////////////////////////
 
-// Image's filename. Should be a square image.
+// Image's filename. Should be a square image for circle and square mode.
 final String FILENAME = "image.jpg";
 
 // Number of pins
 final int NR_PINS = 200;
 
-// SQUARE or CIRCLE shape
+// RECTANGLE, SQUARE or CIRCLE shape
 final Mode MODE = Mode.CIRCLE;
 
-// Real size to calculate total thread length (circle diameter or square size)
+// Real size to calculate total thread length (circle diameter or square/recangle longest side)
 final float REAL_SIZE = 0.8; // [m]
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +116,8 @@ class Slider {
 
 enum Mode {
   CIRCLE,
-  SQUARE
+  SQUARE,
+  RECTANGLE
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,40 +139,48 @@ void cropImageCircle(PImage image) {
   }
 }
 
-// Returns the coordinates of the circular/square pins based on their number
-// and the size of the cirlce (diameter) or square (width and height).
-ArrayList<Point> calcPins(int number, int size, Mode mode) {
+// Returns the coordinates of the circular/square/rectangle pins based on their number
+// and the size of the cirlce, square or rectangle.
+ArrayList<Point> calcPins(int number, int w, int h, Mode mode) {
   ArrayList<Point> pins = new ArrayList<Point>();
   if (mode == Mode.CIRCLE) {
+    assert w == h;
+    final int size = w;
     final float radius = size / 2.0;
     final float angle = PI * 2.0 / number;
     for (int i = 0; i < number; ++i) {
       pins.add(Point.of(round(radius + radius * sin(i * angle)),
                         round(radius + radius * cos(i * angle))));
     }
-  } else { // SQUARE
-    if (number % 4 != 0) {
-      println("Number of pins must be a multiple of 4 in SQUARE mode!");
-      return null;
-    }
-    int perSide = number / 4;
-    float spaceBetween = size / (perSide - 1);
+  } else { // SQUARE / RECTANGLE
+    int xPins = (number * w) / (2 * (h + w));
+    int yPins = (number - (2 * xPins)) / 2;
+    float spaceX = (float)w / xPins;
+    float spaceY = (float)h / yPins;
     // top left -> bottom left
-    for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(0, round(spaceBetween * i)));
+    for (int i = 0; i < yPins; ++i) {
+      pins.add(Point.of(0, round(spaceY * i)));
     }
     // bottom left -> bottom right
-    for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(round(spaceBetween * i), size));
+    for (int i = 0; i < xPins; ++i) {
+      pins.add(Point.of(round(spaceX * i), h));
     }
     // bottom right -> top right
-    for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(size, size - round(spaceBetween * i)));
+    for (int i = 0; i < yPins; ++i) {
+      pins.add(Point.of(w, h - round(spaceY * i)));
     }
     // top right -> top left
-    for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(size - round(spaceBetween * i), 0));
+    for (int i = 0; i < xPins; ++i) {
+      pins.add(Point.of(w - round(spaceX * i), 0));
     }
+  }
+  minX = minY = 999999;
+  maxX = maxY = -1;
+  for (Point p : pins) {
+    minX = min(minX, p.x);
+    minY = min(minY, p.y);
+    maxX = max(maxX, p.x);
+    maxY = max(maxY, p.y);
   }
   return pins;
 }
@@ -240,7 +249,7 @@ int nextPin(int current, HashMap<Integer, ArrayList<Point>> lines,
             HashSet<Integer> used, PImage image, int minDistance) {
   double maxScore = 0;
   int next = -1;
-  for (int i = 0; i < NR_PINS; ++i) {
+  for (int i = 0; i < pins.size(); ++i) {
     if (current == i) continue;
     int pair = pinPair(current, i);
     
@@ -248,12 +257,15 @@ int nextPin(int current, HashMap<Integer, ArrayList<Point>> lines,
       // Prevent two consecutive pins with less than minimal distance
       int diff = abs(current - i);
       float dist = random(minDistance * 2/3, minDistance * 4/3);
-      if (diff < dist || diff > NR_PINS - dist) continue;
-    } else { // SQUARE
+      if (diff < dist || diff > pins.size() - dist) continue;
+    } else { // SQUARE / RECTANGLE
       // Prevent two consecutive pins on the same side
-      int side_current = (current * 4) / NR_PINS;
-      int side_i = (i * 4) / NR_PINS;
-      if (side_current == side_i) continue;
+      Point pCurr = pins.get(current);
+      Point pNext = pins.get(i);
+      if (pCurr.x == minX && pNext.x == minX) continue;
+      if (pCurr.x == maxX && pNext.x == maxX) continue;
+      if (pCurr.y == minY && pNext.y == minY) continue;
+      if (pCurr.y == maxY && pNext.y == maxY) continue;
     }
   
     // Prevent usage of already used pin pair
@@ -271,18 +283,17 @@ int nextPin(int current, HashMap<Integer, ArrayList<Point>> lines,
 
 // Calculates total thread length based on steps
 int totalThreadLength(IntList steps) {
-  ArrayList<Point> p = calcPins(NR_PINS, int(REAL_SIZE * 1000), MODE);
-  float len = 0;
-   for (int i = 0; i < steps.size() - 1; i++) {
-      // Get pin pair
-      Point a = p.get(steps.get(i));
-      Point b = p.get(steps.get(i + 1));
-      // Calculate distance and add to total length
-      int x = a.x - b.x;
-      int y = a.y - b.y;
-      len += sqrt(x*x + y*y);
+  double len = 0;
+  for (int i = 0; i < steps.size() - 1; i++) {
+    // Get pin pair
+    Point a = pins.get(steps.get(i));
+    Point b = pins.get(steps.get(i + 1));
+    // Calculate distance and add to total length
+    int x = a.x - b.x;
+    int y = a.y - b.y;
+    len += sqrt(x*x + y*y);
    }
-   return int(len/1000);
+   return round((float)((len * REAL_SIZE) / SIZE));
 }
 
 void saveInstructions(String filename, IntList steps) {
@@ -340,6 +351,9 @@ PImage img;
 
 // List of pin coordinates
 ArrayList<Point> pins;
+
+// Min/max pin coordinates
+int minX, minY, maxX, maxY; 
 
 // List of all possible lines (keys are generated by pinPair())
 HashMap<Integer, ArrayList<Point>> lines;
@@ -408,10 +422,63 @@ void drawStrings() {
   }
 }
 
+void drawPinHint() {
+  int topLeft, topRight, bottomLeft, bottomRight;
+  topLeft = topRight = bottomLeft = bottomRight = 0;
+  int i = 0;
+  for (Point p : pins) {
+    if (p.x == minX && p.y == minY) topLeft = i;
+    if (p.x == minX && p.y == maxY) bottomLeft = i;
+    if (p.x == maxX && p.y == maxY) bottomRight = i;
+    if (p.x == maxX && p.y == minY) topRight = i;
+    i++;
+  }
+  noStroke();
+  pushMatrix();
+  {
+    int hintSize = 10;
+    translate(width - SIZE, 0) ;
+    fill(255, 0, 0);
+    rectMode(CENTER);
+    rect(minX, minY, hintSize, hintSize);
+    rect(minX, maxY, hintSize, hintSize);
+    rect(maxX, maxY, hintSize, hintSize);
+    rect(maxX, minY, hintSize, hintSize);
+    rectMode(CORNER);
+    textSize(30);
+    textAlign(LEFT, TOP);
+    whiteOutlinedRedText("#" + topLeft, minX + 18, minY + 18);
+    textAlign(LEFT, BOTTOM);
+    whiteOutlinedRedText("#" + bottomLeft, minX + 18, maxY - 18);
+    textAlign(RIGHT, BOTTOM);
+    whiteOutlinedRedText("#" + bottomRight, maxX - 18, maxY - 18);
+    textAlign(RIGHT, TOP);
+    whiteOutlinedRedText("#" + topRight, maxX - 18, minY + 18);
+  }
+  popMatrix();
+  fill(0);
+  textAlign(LEFT, TOP);
+  textSize(16);
+  text("Total pins: " + pins.size(), 10, height - 22);
+}
+
+void whiteOutlinedRedText(String s, int x, int y) {
+  fill(255);
+  for(int i = -1; i < 2; i++){
+    text(s, x + i, y);
+    text(s, x, y + i);
+  }
+  fill(255, 0, 0);
+  text(s, x, y);
+}
+
 void drawPattern() {
   clearStrings();
   drawPins();
   drawStrings();
+  if (MODE == Mode.SQUARE || MODE == Mode.RECTANGLE) {
+    drawPinHint();
+  }
 }
 
 void drawSliders() {
@@ -469,7 +536,7 @@ void initSliders() {
   stringSlider = new Slider(x, y, w, h, DEFAULT_STRINGS, 0, 10000, "strings");
   fadeSlider = new Slider(x, y += spaceY, w, h, DEFAULT_FADE, 0, 255, "fade");
   if (MODE == Mode.CIRCLE) {
-    minDistanceSlider = new Slider(x, y += spaceY, w, h, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "average minimal distance");
+    minDistanceSlider = new Slider(x, y += spaceY, w, h, DEFAULT_MIN_DIST, 0, pins.size() / 2, "average minimal distance");
   }
   lineVariationSlider = new Slider(x, y += spaceY, w, h, DEFAULT_LINE_VARATION, 0, 20, "line variation");
   opacitySlider = new Slider(x, y += spaceY, w, h, DEFAULT_OPACITY, 0, 100, "opacity");
@@ -488,14 +555,22 @@ void setup() {
     return;
   }
   img.filter(GRAY);
-  img.resize(SIZE, SIZE);
+  if (MODE == Mode.RECTANGLE) {
+    if (img.width > img.height) {
+      img.resize(SIZE, 0);
+    } else {
+      img.resize(0, SIZE);
+    }
+  } else {
+    img.resize(SIZE, SIZE);
+  }
   if (MODE == Mode.CIRCLE) {
     cropImageCircle(img);
   }
   image(img, 0, 0);
 
   // Calculate pins
-  pins = calcPins(NR_PINS, SIZE, MODE);
+  pins = calcPins(NR_PINS, img.width, img.height, MODE);
   if (pins == null) {
     exit();
     return;
@@ -503,8 +578,8 @@ void setup() {
 
   // Calculate the pixels of all possible lines
   lines = new HashMap<Integer, ArrayList<Point>>();
-  for (int i = 0; i < NR_PINS; ++i) {
-    for (int j = i + 1; j < NR_PINS; ++j) {
+  for (int i = 0; i < pins.size(); ++i) {
+    for (int j = i + 1; j < pins.size(); ++j) {
       lines.put(pinPair(i, j), linePixels(pins.get(i), pins.get(j)));
     }
   }
