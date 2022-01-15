@@ -146,8 +146,8 @@ ArrayList<Point> calcPins(int number, int size, Mode mode) {
     final float radius = size / 2.0;
     final float angle = PI * 2.0 / number;
     for (int i = 0; i < number; ++i) {
-      pins.add(Point.of(round(radius + radius * cos(i * angle)),
-                         round(radius + radius * sin(i * angle))));
+      pins.add(Point.of(round(radius + radius * sin(i * angle)),
+                        round(radius + radius * cos(i * angle))));
     }
   } else { // SQUARE
     if (number % 4 != 0) {
@@ -156,21 +156,21 @@ ArrayList<Point> calcPins(int number, int size, Mode mode) {
     }
     int perSide = number / 4;
     float spaceBetween = size / (perSide - 1);
-    // top left -> top right
+    // top left -> bottom left
     for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(round(spaceBetween * i), 0));
+      pins.add(Point.of(0, round(spaceBetween * i)));
     }
-    // top right -> bottom right
+    // bottom left -> bottom right
     for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(size, round(spaceBetween * i)));
+      pins.add(Point.of(round(spaceBetween * i), size));
     }
-    // bottom right -> bottom left
+    // bottom right -> top right
     for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(size - round(spaceBetween * i), size));
+      pins.add(Point.of(size, size - round(spaceBetween * i)));
     }
-    // bottom left -> top left
+    // top right -> top left
     for (int i = 0; i < perSide; ++i) {
-      pins.add(Point.of(0, size - round(spaceBetween * i)));
+      pins.add(Point.of(size - round(spaceBetween * i), 0));
     }
   }
   return pins;
@@ -207,7 +207,7 @@ ArrayList<Point> linePixels(Point a, Point b) {
 double lineScore(PImage image, ArrayList<Point> points) {
   int score = 0;
   for (Point p : points) {
-    color c = image.get(p.y, p.x) & 0xff;
+    color c = image.get(p.x, p.y) & 0xff;
     score += 0xff - c;
   }
   return (double)score / points.size();
@@ -217,10 +217,10 @@ double lineScore(PImage image, ArrayList<Point> points) {
 // a given value (0 - 255);
 void reduceLine(PImage image, ArrayList<Point> points, int value) {
   for (Point p : points) {
-    int c = image.get(p.y, p.x) & 0xff;
+    int c = image.get(p.x, p.y) & 0xff;
     c += value;
     if (c > 0xff) c = 0xff;
-    image.set(p.y, p.x, color(c));
+    image.set(p.x, p.y, color(c));
   }
 }
 
@@ -398,8 +398,8 @@ void drawStrings() {
     Point a = pins.get(steps.get(i));
     Point b = pins.get(steps.get(i + 1));
     // Move pin pair to output location
-    a = Point.of(width - SIZE + a.y, a.x);
-    b = Point.of(width - SIZE + b.y, b.x);
+    a = Point.of(width - SIZE + a.x, a.y);
+    b = Point.of(width - SIZE + b.x, b.y);
     // Generate third point to introduce line variation (bezier control point)
     Point c = Point.of(round(random(-variation, variation) + (a.x + b.x) / 2),
                         round(random(-variation, variation) + (a.y + b.y) / 2));
