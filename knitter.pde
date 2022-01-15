@@ -390,15 +390,17 @@ final HashSet<Slider> SLIDERS = new HashSet<Slider>();
 void clearStrings() {
   noStroke();
   fill(255);
-  rect(width - SIZE, 0, SIZE, SIZE);
+  rect(0, 0, SIZE, SIZE);
 }
 
 void drawPins() {
   noStroke();
   fill(0);
+  rectMode(CENTER);
   for (Point p : pins) {
-    rect(width - SIZE + p.x - 1, p.y - 1, 2, 2);
+    rect(p.x, p.y, 2, 2);
   }
+  rectMode(CORNER);
 }
 
 void drawStrings() {
@@ -411,12 +413,9 @@ void drawStrings() {
     // Get pin pair
     Point a = pins.get(steps.get(i));
     Point b = pins.get(steps.get(i + 1));
-    // Move pin pair to output location
-    a = Point.of(width - SIZE + a.x, a.y);
-    b = Point.of(width - SIZE + b.x, b.y);
     // Generate third point to introduce line variation (bezier control point)
     Point c = Point.of(round(random(-variation, variation) + (a.x + b.x) / 2),
-                        round(random(-variation, variation) + (a.y + b.y) / 2));
+                       round(random(-variation, variation) + (a.y + b.y) / 2));
     // Draw string as bezier curve
     bezier(a.x, a.y, c.x, c.y, c.x, c.y, b.x, b.y);
   }
@@ -434,28 +433,23 @@ void drawPinHint() {
     i++;
   }
   noStroke();
-  pushMatrix();
-  {
-    int hintSize = 10;
-    translate(width - SIZE, 0) ;
-    fill(255, 0, 0);
-    rectMode(CENTER);
-    rect(minX, minY, hintSize, hintSize);
-    rect(minX, maxY, hintSize, hintSize);
-    rect(maxX, maxY, hintSize, hintSize);
-    rect(maxX, minY, hintSize, hintSize);
-    rectMode(CORNER);
-    textSize(30);
-    textAlign(LEFT, TOP);
-    whiteOutlinedRedText("#" + topLeft, minX + 18, minY + 18);
-    textAlign(LEFT, BOTTOM);
-    whiteOutlinedRedText("#" + bottomLeft, minX + 18, maxY - 18);
-    textAlign(RIGHT, BOTTOM);
-    whiteOutlinedRedText("#" + bottomRight, maxX - 18, maxY - 18);
-    textAlign(RIGHT, TOP);
-    whiteOutlinedRedText("#" + topRight, maxX - 18, minY + 18);
-  }
-  popMatrix();
+  fill(255, 0, 0);
+  int hintSize = 10;
+  rectMode(CENTER);
+  rect(minX, minY, hintSize, hintSize);
+  rect(minX, maxY, hintSize, hintSize);
+  rect(maxX, maxY, hintSize, hintSize);
+  rect(maxX, minY, hintSize, hintSize);
+  rectMode(CORNER);
+  textSize(30);
+  textAlign(LEFT, TOP);
+  whiteOutlinedRedText("#" + topLeft, minX + 18, minY + 18);
+  textAlign(LEFT, BOTTOM);
+  whiteOutlinedRedText("#" + bottomLeft, minX + 18, maxY - 18);
+  textAlign(RIGHT, BOTTOM);
+  whiteOutlinedRedText("#" + bottomRight, maxX - 18, maxY - 18);
+  textAlign(RIGHT, TOP);
+  whiteOutlinedRedText("#" + topRight, maxX - 18, minY + 18);
   fill(0);
   textAlign(LEFT, TOP);
   textSize(16);
@@ -473,12 +467,17 @@ void whiteOutlinedRedText(String s, int x, int y) {
 }
 
 void drawPattern() {
-  clearStrings();
-  drawPins();
-  drawStrings();
-  if (MODE == Mode.SQUARE || MODE == Mode.RECTANGLE) {
-    drawPinHint();
+  pushMatrix();
+  {
+    translate(width - SIZE, 0);
+    clearStrings();
+    drawPins();
+    drawStrings();
+    if (MODE == Mode.SQUARE || MODE == Mode.RECTANGLE) {
+      drawPinHint();
+    }
   }
+  popMatrix();
 }
 
 void drawSliders() {
