@@ -53,10 +53,6 @@ static class Point {
   static Point of(int x, int y) {
     return new Point(x, y);
   }
-
-  String toString() { 
-    return String.format("(%s, %s)", x, y); 
-  }
 }
 
 // Simple slider control for integer values.
@@ -66,6 +62,7 @@ class Slider {
   private int value;
 
   Slider(int x, int y, int w, int h, int value, int min, int max, String text) {
+    SLIDERS.add(this);
     this.x = x;
     this.y = y;
     this.w = w;
@@ -97,9 +94,9 @@ class Slider {
 
     // White text
     fill(255);
-    textAlign(LEFT, CENTER);
-    textSize(16);
-    text(text + ": " + value, x + h / 2, y + h / 2 - 2);
+    textAlign(LEFT, TOP);
+    textSize(h - 2);
+    text(text + ": " + value, x + h / 2, y);
   }
 
   // Check if mouse is pressed on slider and update value accordingly.
@@ -131,9 +128,7 @@ void cropImageCircle(PImage image) {
   final color white = color(255);
   final Point center = Point.of(round(image.width / 2.0), 
                                 round(image.height / 2.0));
-  final int radius = image.width < image.height 
-                   ? round(image.width / 2.0) 
-                   : round(image.height / 2.0);
+  final int radius = min(center.x, center.y);
   for (int i = 0; i < image.width; i++) {
     for (int j = 0; j < image.height; j++) {
       if (pow(center.x - i, 2) + pow(center.y - j, 2) > pow(radius, 2)) {
@@ -369,7 +364,9 @@ Slider opacitySlider;
 Slider minDistanceSlider;
 
 // Causes string pattern to be redrawn on next draw()
-boolean redraw = false;
+boolean redraw = true;
+
+final HashSet<Slider> SLIDERS = new HashSet<Slider>();
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS USING GLOBAL VARIABLES
@@ -382,7 +379,6 @@ void clearStrings() {
   rect(width - SIZE, 0, SIZE, SIZE);
 }
 
-// Draws pins
 void drawPins() {
   noStroke();
   fill(0);
@@ -391,7 +387,6 @@ void drawPins() {
   }
 }
 
-// Draw strings
 void drawStrings() {
   stroke(0, opacitySlider.value);
   strokeWeight(1);
@@ -410,6 +405,18 @@ void drawStrings() {
                         round(random(-variation, variation) + (a.y + b.y) / 2));
     // Draw string as bezier curve
     bezier(a.x, a.y, c.x, c.y, c.x, c.y, b.x, b.y);
+  }
+}
+
+void drawPattern() {
+  clearStrings();
+  drawPins();
+  drawStrings();
+}
+
+void drawSliders() {
+  for (Slider s : SLIDERS) {
+    s.drawSelf();
   }
 }
 
@@ -451,16 +458,29 @@ void generatePattern() {
   // Save instructions in two different formats
   saveBytes("instruction.txt", stepsInstructions.toString().getBytes());
   saveInstructions("instruction.html", steps);
-  
-  redraw = true;
-  redraw();
+}
+
+void initSliders() {
+  int x = 5;
+  int w = width - 10;
+  int h = 20;
+  int y = SIZE + 10;
+  int spaceY = 25;
+  stringSlider = new Slider(x, y, w, h, DEFAULT_STRINGS, 0, 10000, "strings");
+  fadeSlider = new Slider(x, y += spaceY, w, h, DEFAULT_FADE, 0, 255, "fade");
+  if (MODE == Mode.CIRCLE) {
+    minDistanceSlider = new Slider(x, y += spaceY, w, h, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "average minimal distance");
+  }
+  lineVariationSlider = new Slider(x, y += spaceY, w, h, DEFAULT_LINE_VARATION, 0, 20, "line variation");
+  opacitySlider = new Slider(x, y += spaceY, w, h, DEFAULT_OPACITY, 0, 100, "opacity");
 }
 
 void setup() {
   size(1410, 835);
+  background(255);
   randomSeed(0);
 
-  // Load image from file.
+  // Load image from file and draw it
   img = loadImage(FILENAME);
   if (img == null) {
     println("Couldn't load image file '" + sketchFile(FILENAME) + "'!");
@@ -472,6 +492,7 @@ void setup() {
   if (MODE == Mode.CIRCLE) {
     cropImageCircle(img);
   }
+  image(img, 0, 0);
 
   // Calculate pins
   pins = calcPins(NR_PINS, SIZE, MODE);
@@ -488,55 +509,30 @@ void setup() {
     }
   }
 
-  // Init sliders
-  stringSlider = new Slider(5, SIZE + 10, width - 10, 20, DEFAULT_STRINGS, 0, 10000, "strings");
-  fadeSlider = new Slider(5, SIZE + 35, width - 10, 20, DEFAULT_FADE, 0, 255, "fade");
-  if (MODE == Mode.CIRCLE) {
-    minDistanceSlider = new Slider(5, SIZE + 60, width - 10, 20, DEFAULT_MIN_DIST, 0, NR_PINS / 2, "average minimal distance");
-  }
-  lineVariationSlider = new Slider(5, SIZE + 85, width - 10, 20, DEFAULT_LINE_VARATION, 0, 20, "line variation");
-  opacitySlider = new Slider(5, SIZE + 110, width - 10, 20, DEFAULT_OPACITY, 0, 100, "opacity");
-
-  // Init output window with original image
-  background(255);
-  image(img, 0, 0);
-  
-  // Generate pattern with yet default values
+  initSliders();
   generatePattern();
 }
 
 void draw() {
-  // Draw string pattern if necessary
   if (redraw) {
-    clearStrings();
-    drawPins();
-    drawStrings();
+    drawPattern();
+    drawSliders();
     redraw = false;
   }
-  // Draw sliders
-  stringSlider.drawSelf();
-  fadeSlider.drawSelf();
-  lineVariationSlider.drawSelf();
-  if (MODE == Mode.CIRCLE) minDistanceSlider.drawSelf();
-  opacitySlider.drawSelf();
 }
 
 void mouseReleased() {
-  Boolean generateNeeded = false;
-  Boolean redrawNeeded = false;
-
+  boolean generateNeeded = false;
   generateNeeded |= stringSlider.handleMousePressed();
   generateNeeded |= fadeSlider.handleMousePressed();
   generateNeeded |= minDistanceSlider.handleMousePressed();
 
-  redrawNeeded |= lineVariationSlider.handleMousePressed();
-  redrawNeeded |= opacitySlider.handleMousePressed();
-
   if (generateNeeded) {
     generatePattern();
-  } else if (redrawNeeded) {
-    redraw = true;
-    redraw();
   }
+
+  redraw |= generateNeeded;
+  redraw |= lineVariationSlider.handleMousePressed();
+  redraw |= opacitySlider.handleMousePressed();
 }
   
