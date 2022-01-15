@@ -525,7 +525,9 @@ void mouseReleased() {
   boolean generateNeeded = false;
   generateNeeded |= stringSlider.handleMousePressed();
   generateNeeded |= fadeSlider.handleMousePressed();
-  generateNeeded |= minDistanceSlider.handleMousePressed();
+  if (minDistanceSlider != null) {
+    generateNeeded |= minDistanceSlider.handleMousePressed();
+  }
 
   if (generateNeeded) {
     generatePattern();
