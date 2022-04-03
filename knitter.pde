@@ -512,7 +512,7 @@ void generatePattern() {
     int pair = pinPair(current, next);
     reduceLine(imgCopy, lines.get(pair), fadeSlider.value);
 
-    stepsInstructions.append("String #").append(i).append(" -> next pint: ").append(next).append("\r\n");
+    stepsInstructions.append("String #").append(i).append(" -> next pin: ").append(next).append("\r\n");
   
     used.add(pair);
     steps.append(next);
