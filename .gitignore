@@ -2,6 +2,7 @@ out/*
 
 *.jpg
 *.png
+*.autosave
 instruction.html
 instruction.txt
 
