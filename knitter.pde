@@ -16,6 +16,9 @@ final Mode MODE = Mode.CIRCLE;
 // Real size to calculate total thread length (circle diameter or square/recangle longest side)
 final float REAL_SIZE = 0.8; // [m]
 
+// Increase to visualize a thicker thread
+final float THREAD_THICKNESS = 1.0; // (1.0 = all-purpose sewing thread, approx. 0.25 mm in diameter)
+
 ////////////////////////////////////////////////////////////////////////////////
 // DEFAULT VALUES
 ////////////////////////////////////////////////////////////////////////////////
@@ -405,7 +408,7 @@ void drawPins() {
 
 void drawStrings() {
   stroke(0, opacitySlider.value);
-  strokeWeight(1);
+  strokeWeight(THREAD_THICKNESS);
   noFill();
   randomSeed(0);
   int variation = lineVariationSlider.value;
