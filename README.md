@@ -10,6 +10,7 @@ The method is inspired by the work of [Petros Vrellis](http://artof01.com/vrelli
 * [Dog portrait](https://imgur.com/gallery/pN5T9) by [Wtfacoconut](https://imgur.com/user/Wtfacoconut)
 * Similar [algorithm using Qt/C++](https://github.com/MaloDrougard/knit) by [MaloDrougard](https://github.com/MaloDrougard) (also includes an interesting [report](https://github.com/MaloDrougard/knit/blob/master/Doc/knit-final-report.pdf) on the topic)
 * [ArtRapid](https://artrapid.com/) web app and store. Can create circular knitting patterns for free and purchase physical artworks.
+* [Stringading](https://stringading.shop/) shop. German manufacturer offering free preview and purchase of physical artworks.
 
 # How to use it
 
